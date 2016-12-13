@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-#-*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 '''
 Merge IPNetworks
-Rev.20160104
+Rev.20161213
 '''
 
 import sys
@@ -23,14 +23,14 @@ def get_nets(src_file_path):
                 ip_end = ipaddress.ip_address(ip_pair[1].strip())
                 temp_net = [
                     ipaddr for ipaddr in ipaddress.summarize_address_range(
-                    ip_begin, ip_end)]
+                        ip_begin, ip_end)]
             elif '/' in entry:
                 temp_net = [ipaddress.ip_network(entry.strip())]
             else:
                 temp_net = [ipaddress.ip_address(entry.strip())]
-            ip_net = ip_net+temp_net
+            ip_net = ip_net + temp_net
         print(ip_net)
-    return(ip_net)
+        return(ip_net)
 
 
 def merge_ip_nets(ip_net):
@@ -46,20 +46,21 @@ def write_summ_nets(summ_net, dst_file_path):
     is_first_line = 1
     with open(dst_file_path, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
-        for net in summ_net:
-            ip_count += net.num_addresses
-            first = net[0]
-            last = net[-1]
-            if first == temp_end_ip + 1:
-                temp_end_ip = last
+        for each_net in summ_net:
+            ip_count += each_net.num_addresses
+            each_net_first_ip = each_net[0]
+            each_net_last_ip = each_net[-1]
+            # check if the temp ip net can be continue
+            if each_net_first_ip == temp_end_ip + 1:
+                temp_end_ip = each_net_last_ip
             else:
                 if is_first_line == 0:
                     writer.writerow(
-                        [str(temp_begin_ip)+'-'+str(temp_end_ip)])
-                temp_begin_ip = first
-                temp_end_ip = last
+                        [str(temp_begin_ip) + '-' + str(temp_end_ip)])
+                temp_begin_ip = each_net_first_ip
+                temp_end_ip = each_net_last_ip
                 is_first_line = 0
-        writer.writerow([str(temp_begin_ip)+'-'+str(temp_end_ip)])
+        writer.writerow([str(temp_begin_ip) + '-' + str(temp_end_ip)])
         return(ip_count)
 
 
