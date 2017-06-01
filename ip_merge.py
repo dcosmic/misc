@@ -89,14 +89,25 @@ def write_summ_nets(net_list, dst_file_path, config):
         print(config)
 
 
+def show_help():
+    print('usage: ipmerge.py D:\\xxx [-config]')
+    print('-h    show help')
+    print('-c    compact mode output')
+    print('-T    transform the output to 1*n')
+
+
 if __name__ == '__main__':
 
-    if sys.argv[1] == '--help' or len(sys.argv) == 1:
-            print('usage: ipmerge.py D:\\xxx [--config]')
-            print('-c    compact mode output')
-            print('-T    transform the output to 1*n')
+    if len(sys.argv) == 1:
+        show_help()
     elif len(sys.argv) == 2:
-        config = ''
+        if sys.argv[1] == '-h':
+            show_help()
+        elif '\\' not in sys.argv[1]:
+            print('WRONG parameters!')
+            show_help()
+        else:
+            config = ''
     else:
         working_dir = sys.argv[1]
         config = sys.argv[2]
