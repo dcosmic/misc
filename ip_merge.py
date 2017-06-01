@@ -25,7 +25,7 @@ def get_nets(src_file_path):
                     ipaddr for ipaddr in ipaddress.summarize_address_range(
                         ip_begin, ip_end)]
             elif '/' in entry:
-                temp_net = [ipaddress.ip_network(entry.strip())]
+                temp_net = [ipaddress.ip_network(entry.strip(), strict=False)]
             else:
                 temp_net = [ipaddress.ip_address(entry.strip())]
             ip_net = ip_net + temp_net
@@ -67,7 +67,7 @@ def write_summ_nets(summ_net, dst_file_path):
             net_break_counter += 1
         writer.writerow([net_start.compressed + '-' + net_end.compressed])
         print(net_start.compressed + '-' + net_end.compressed)
-        return(ip_count)
+        return(ip_counter)
 
 
 if __name__ == '__main__':
