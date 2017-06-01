@@ -2,7 +2,6 @@
 # -*- coding:utf-8 -*-
 '''
 Merge IPNetworks
-Rev.20161213
 '''
 
 import sys
@@ -34,40 +33,60 @@ def get_nets(src_file_path):
 
 
 def merge_ip_nets(ip_net):
-    summ_net = [ipaddr for ipaddr in ipaddress.collapse_addresses(ip_net)]
-    print(summ_net)
-    return(summ_net)
-
-
-def write_summ_nets(summ_net, dst_file_path):
     ip_counter = 0
     net_break_counter = 0
-    with open(dst_file_path, 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        for n in summ_net:
-            ip_counter += n.num_addresses
-            start_ip = n[0]
-            end_ip = n[-1]
-            if net_break_counter == 0:
+    nets = [
+        ipaddr for ipaddr in ipaddress.collapse_addresses(ip_net)]
+    merged_nets = []
+    for n in nets:
+        ip_counter += n.num_addresses
+        start_ip = n[0]
+        end_ip = n[-1]
+        if net_break_counter == 0:
+            net_start = start_ip
+            net_end = end_ip
+        # check if the temp ip net can be continue
+        if net_break_counter > 0:
+            if start_ip == net_end + 1:
+                net_end = end_ip
+            else:
+                # net breaks
+                net_break_counter = 0
+                merged_nets.append(
+                    [net_start.compressed + '-' + net_end.compressed])
+                print(merged_nets)
+                # reset net_start & net_end
                 net_start = start_ip
                 net_end = end_ip
-            # check if the temp ip net can be continue
-            if net_break_counter > 0:
-                if start_ip == net_end + 1:
-                    net_end = end_ip
+        net_break_counter += 1
+    merged_nets.append([net_start.compressed + '-' + net_end.compressed])
+    print(merged_nets)
+    return(ip_counter, merged_nets)
+
+
+def write_summ_nets(net_list, dst_file_path, config):
+    with open(dst_file_path, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        write_list = []
+        if 'c' in config:
+            for i in net_list:
+                item = i[0]
+                ip_pair = item.strip().split('-')
+                print(ip_pair)
+                if ip_pair[0] == ip_pair[1]:
+                    write_list.append(ip_pair[0])
                 else:
-                    # net breaks
-                    net_break_counter = 0
-                    writer.writerow(
-                        [net_start.compressed + '-' + net_end.compressed])
-                    print(net_start.compressed + '-' + net_end.compressed)
-                    # reset net_start & net_end
-                    net_start = start_ip
-                    net_end = end_ip
-            net_break_counter += 1
-        writer.writerow([net_start.compressed + '-' + net_end.compressed])
-        print(net_start.compressed + '-' + net_end.compressed)
-        return(ip_counter)
+                    write_list.append(item)
+        print(write_list)
+        if 't' in config:
+            writer.writerow(write_list)
+        else:
+            for i in write_list:
+                # use ['str'] to setup an iterator
+                item_to_write = [i]
+                print(item_to_write)
+                writer.writerow(item_to_write)
+        print(config)
 
 
 if __name__ == '__main__':
@@ -77,11 +96,15 @@ if __name__ == '__main__':
 
     else:
         working_dir = sys.argv[1]
+        if len(sys.argv) == 3:
+            config = sys.argv[2]
+        else:
+            config = ''
 
         src_file_path = working_dir + '\\to_merge.csv'
         dst_file_path = working_dir + '\\merged.csv'
         if os.path.exists(working_dir):
             ip_net = get_nets(src_file_path)
-            summ_net = merge_ip_nets(ip_net)
-            ip_count = write_summ_nets(summ_net, dst_file_path)
+            (ip_count, net_list) = merge_ip_nets(ip_net)
+            write_summ_nets(net_list, dst_file_path, config)
             print('Total: ', ip_count, 'hosts!')
