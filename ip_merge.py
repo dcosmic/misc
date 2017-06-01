@@ -78,7 +78,7 @@ def write_summ_nets(net_list, dst_file_path, config):
                 else:
                     write_list.append(item)
         print(write_list)
-        if 't' in config:
+        if 'T' in config:
             writer.writerow(write_list)
         else:
             for i in write_list:
@@ -91,15 +91,15 @@ def write_summ_nets(net_list, dst_file_path, config):
 
 if __name__ == '__main__':
 
-    if len(sys.argv) <= 1:
-        print('No argument!  please input working dir!')
-
+    if sys.argv[1] == '--help' or len(sys.argv) == 1:
+            print('usage: ipmerge.py D:\\xxx [--config]')
+            print('-c    compact mode output')
+            print('-T    transform the output to 1*n')
+    elif len(sys.argv) == 2:
+        config = ''
     else:
         working_dir = sys.argv[1]
-        if len(sys.argv) == 3:
-            config = sys.argv[2]
-        else:
-            config = ''
+        config = sys.argv[2]
 
         src_file_path = working_dir + '\\to_merge.csv'
         dst_file_path = working_dir + '\\merged.csv'
