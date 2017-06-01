@@ -40,27 +40,33 @@ def merge_ip_nets(ip_net):
 
 
 def write_summ_nets(summ_net, dst_file_path):
-    ip_count = 0
-    temp_begin_ip = ipaddress.ip_address('127.0.0.1')
-    temp_end_ip = ipaddress.ip_address('127.0.0.1')
-    is_first_line = 1
+    ip_counter = 0
+    net_break_counter = 0
     with open(dst_file_path, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
-        for each_net in summ_net:
-            ip_count += each_net.num_addresses
-            each_net_first_ip = each_net[0]
-            each_net_last_ip = each_net[-1]
+        for n in summ_net:
+            ip_counter += n.num_addresses
+            start_ip = n[0]
+            end_ip = n[-1]
+            if net_break_counter == 0:
+                net_start = start_ip
+                net_end = end_ip
             # check if the temp ip net can be continue
-            if each_net_first_ip == temp_end_ip + 1:
-                temp_end_ip = each_net_last_ip
-            else:
-                if is_first_line == 0:
+            if net_break_counter > 0:
+                if start_ip == net_end + 1:
+                    net_end = end_ip
+                else:
+                    # net breaks
+                    net_break_counter = 0
                     writer.writerow(
-                        [str(temp_begin_ip) + '-' + str(temp_end_ip)])
-                temp_begin_ip = each_net_first_ip
-                temp_end_ip = each_net_last_ip
-                is_first_line = 0
-        writer.writerow([str(temp_begin_ip) + '-' + str(temp_end_ip)])
+                        [net_start.compressed + '-' + net_end.compressed])
+                    print(net_start.compressed + '-' + net_end.compressed)
+                    # reset net_start & net_end
+                    net_start = start_ip
+                    net_end = end_ip
+            net_break_counter += 1
+        writer.writerow([net_start.compressed + '-' + net_end.compressed])
+        print(net_start.compressed + '-' + net_end.compressed)
         return(ip_count)
 
 
