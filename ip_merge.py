@@ -67,50 +67,54 @@ def merge_ip_nets(ip_net):
 def write_summ_nets(net_list, dst_file_path, config):
     with open(dst_file_path, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
-        write_list = []
-        if 'c' in config:
+        # transform OUTPUT
+        if 'T' in config:
+            write_list = []
             for i in net_list:
                 item = i[0]
-                ip_pair = item.strip().split('-')
-                print(ip_pair)
-                if ip_pair[0] == ip_pair[1]:
-                    write_list.append(ip_pair[0])
+                if 'c' in config:
+                    ip_pair = item.split('-')
+                    if ip_pair[0] == ip_pair[1]:
+                        write_list.append(ip_pair[0])
+                    else:
+                        write_list.append(item)
                 else:
                     write_list.append(item)
-        print(write_list)
-        if 'T' in config:
             writer.writerow(write_list)
         else:
-            for i in write_list:
-                # use ['str'] to setup an iterator
-                item_to_write = [i]
-                print(item_to_write)
+            for i in net_list:
+                item = i[0]
+                if 'c' in config:
+                    ip_pair = item.split('-')
+                    if ip_pair[0] == ip_pair[1]:
+                        item_to_write = [ip_pair[0]]
+                    else:
+                        item_to_write = [item]
+                else:
+                    item_to_write = [item]
                 writer.writerow(item_to_write)
-        print(config)
+        print('OUTPUT CONFIG:', config)
 
 
 def show_help():
     print('usage: ipmerge.py D:\\xxx [-config]')
     print('-h    show help')
-    print('-c    compact mode output')
-    print('-T    transform the output to 1*n')
+    print('-c    compact mode: single ip without "-"')
+    print('-T    transform OUTPUT: 1*n')
 
 
 if __name__ == '__main__':
 
     if len(sys.argv) == 1:
         show_help()
-    elif len(sys.argv) == 2:
-        if sys.argv[1] == '-h':
-            show_help()
-        elif '\\' not in sys.argv[1]:
-            print('WRONG parameters!')
-            show_help()
-        else:
-            config = ''
+    elif len(sys.argv) == 2 and sys.argv[1] == '-h':
+        show_help()
     else:
         working_dir = sys.argv[1]
-        config = sys.argv[2]
+        if len(sys.argv) == 2:
+            config = ''
+        else:
+            config = sys.argv[2]
 
         src_file_path = working_dir + '\\to_merge.csv'
         dst_file_path = working_dir + '\\merged.csv'
